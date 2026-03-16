@@ -1,42 +1,141 @@
-<div class="mt-10 bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
-  <div class="p-8 border-b border-slate-50 flex justify-between items-center">
-    <h2 class="text-xl font-black text-slate-800">Danh sách công việc gần đây</h2>
-    <button class="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition-all">
-      + Thêm Task mới
-    </button>
+<div class="flex h-screen bg-slate-50 font-sans text-slate-900">
+  <aside class="w-64 bg-slate-900 text-white flex flex-col">
+    <div class="h-20 flex items-center px-8 font-black text-2xl tracking-tighter border-b border-slate-800">
+      TASKFLOW<span class="text-indigo-500">.</span>
+    </div>
+    <nav class="flex-1 p-4 space-y-2 mt-4">
+      <div class="flex items-center gap-3 px-4 py-3 bg-indigo-600 rounded-2xl text-sm font-bold shadow-lg shadow-indigo-500/20">
+        Tổng quan
+      </div>
+    </nav>
+  </aside>
+
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <header class="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-10">
+      <h1 class="text-2xl font-black text-slate-800 tracking-tight">Hệ thống quản trị</h1>
+      <div class="flex items-center gap-4">
+        <div class="text-right">
+          <p class="text-sm font-bold text-slate-700">Admin</p>
+          <button (click)="onLogout()" class="text-[10px] font-black text-red-400 hover:text-red-600 uppercase">
+            Rời hệ thống
+          </button>
+        </div>
+        <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-black">AD</div>
+      </div>
+    </header>
+
+    <main class="flex-1 overflow-y-auto p-10">
+      <div class="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
+        <div class="p-8 border-b border-slate-50 flex justify-between items-center gap-4">
+          <h2 class="text-xl font-black text-slate-800">Danh sách công việc</h2>
+          
+          <div class="flex items-center gap-4">
+            <button (click)="openAddModal()" class="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition-all text-nowrap">
+              + Thêm Task
+            </button>
+
+            <div class="relative w-64">
+              <span class="absolute inset-y-0 left-4 flex items-center text-slate-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              </span>
+              <input type="text" (input)="updateSearch($event)" placeholder="Tìm task hoặc người..."
+                class="w-full pl-11 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs outline-none focus:ring-2 focus:ring-indigo-500/20">
+            </div>
+          </div>
+        </div>
+
+        <table class="w-full text-left">
+          <thead>
+            <tr class="bg-slate-50/50">
+              <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tên công việc</th>
+              <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Người làm</th>
+              <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Trạng thái</th>
+              <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of filteredTasks(); track item.id) {
+            <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-all group">
+              <td class="px-8 py-5 text-sm font-bold text-slate-700">{{ item.title }}</td>
+              <td class="px-8 py-5">
+                <span class="text-sm font-medium text-slate-500">{{ item.assignee }}</span>
+              </td>
+              <td class="px-8 py-5">
+                <span [class]="'px-3 py-1 rounded-full text-[10px] font-black uppercase ' + getStatusClass(item.status)">
+                  {{ item.status }}
+                </span>
+              </td>
+              <td class="px-8 py-5 text-right">
+                <div class="flex justify-end gap-2">
+                  <button (click)="openEditModal(item)" class="p-2 text-slate-300 hover:text-indigo-500 hover:bg-indigo-50 rounded-lg transition-all md:opacity-0 md:group-hover:opacity-100">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                  </button>
+                  <button (click)="deleteTask(item.id)" class="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all md:opacity-0 md:group-hover:opacity-100">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="4" class="px-8 py-20 text-center text-slate-400 italic">Không tìm thấy kết quả nào...</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </main>
   </div>
 
-  <div class="overflow-x-auto">
-    <table class="w-full text-left border-collapse">
-      <thead>
-        <tr class="bg-slate-50/50">
-          <th class="px-8 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Tên công việc</th>
-          <th class="px-8 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Người làm</th>
-          <th class="px-8 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Trạng thái</th>
-          <th class="px-8 py-4 text-xs font-black text-slate-400 uppercase tracking-widest">Độ ưu tiên</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (item of tasks(); track item.id) {
-          <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors group">
-            <td class="px-8 py-5 text-sm font-bold text-slate-700">{{ item.title }}</td>
-            <td class="px-8 py-5">
-              <div class="flex items-center gap-2">
-                <div class="w-6 h-6 rounded-full bg-indigo-100 text-[10px] flex items-center justify-center font-bold text-indigo-600">
-                  {{ item.assignee.substring(0, 2).toUpperCase() }}
-                </div>
-                <span class="text-sm font-medium text-slate-600">{{ item.assignee }}</span>
-              </div>
-            </td>
-            <td class="px-8 py-5">
-              <span [class]="'px-3 py-1 rounded-full text-[10px] font-black uppercase ' + getStatusClass(item.status)">
-                {{ item.status }}
-              </span>
-            </td>
-            <td class="px-8 py-5 text-sm font-medium text-slate-400">{{ item.priority }}</td>
-          </tr>
-        }
-      </tbody>
-    </table>
+  @if (showModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" (click)="showModal.set(false)"></div>
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md relative z-10 overflow-hidden animate-in fade-in zoom-in duration-200">
+      <div class="p-8 border-b border-slate-50">
+        <h3 class="text-xl font-black text-slate-800">{{ isEditMode() ? 'Cập nhật công việc' : 'Tạo công việc mới' }}</h3>
+        <p class="text-sm text-slate-400 font-medium">Nhập chi tiết công việc bên dưới</p>
+      </div>
+
+      <form [formGroup]="taskForm" (ngSubmit)="saveTask()" class="p-8 space-y-4">
+        <div>
+          <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Tên công việc</label>
+          <input formControlName="title" type="text" placeholder="Ví dụ: Fix bug giao diện..."
+            class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all">
+        </div>
+
+        <div>
+          <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Người thực hiện</label>
+          <input formControlName="assignee" type="text" placeholder="Tên nhân viên..."
+            class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Ưu tiên</label>
+            <select formControlName="priority" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none">
+              <option value="Low">Thấp</option>
+              <option value="Medium">Vừa</option>
+              <option value="High">Cao</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Trạng thái</label>
+            <select formControlName="status" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none">
+              <option value="Todo">Chờ làm</option>
+              <option value="In Progress">Đang làm</option>
+              <option value="Done">Xong</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex gap-3 pt-4">
+          <button type="button" (click)="showModal.set(false)" class="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-xl transition-all">Hủy</button>
+          <button type="submit" class="flex-1 py-3 bg-indigo-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 transition-all">
+            {{ isEditMode() ? 'Cập nhật' : 'Lưu Task' }}
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
+  }
 </div>

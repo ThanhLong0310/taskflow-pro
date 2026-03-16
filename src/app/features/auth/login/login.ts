@@ -1,15 +1,24 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal,OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [ReactiveFormsModule],
   templateUrl: './login.html'
 })
-export class LoginComponent { 
+export class LoginComponent implements OnInit  {
   private fb = inject(FormBuilder);
-  private router = inject(Router); // 
+  private router = inject(Router);
+private authService = inject(AuthService);
+  
+  ngOnInit() {
+    // Nếu "anh bảo vệ" bảo là đã có thẻ rồi thì cho vào Dashboard luôn
+    if (this.authService.checkAuth()) {
+      this.router.navigate(['/dashboard']);
+    }
+  }
 
   showPassword = signal(false);
 
@@ -33,12 +42,10 @@ export class LoginComponent {
 
     // Giả lập kiểm tra dữ liệu với Server (Database)
     if (email === 'admin@company.com' && password === '123456') {
-      // Đăng nhập thành công -> Dùng router đưa người dùng sang trang Dashboard
-      localStorage.setItem('isLoggedIn', 'true');
+      this.authService.login(); // Dùng hàm login của service
       this.router.navigate(['/dashboard']);
     } else {
-      // Đăng nhập thất bại -> Báo lỗi
-      alert('Sai email hoặc mật khẩu! \n(Gợi ý: Thử admin@company.com / 123456)');
+      alert('Sai tài khoản!');
     }
   }
 }
