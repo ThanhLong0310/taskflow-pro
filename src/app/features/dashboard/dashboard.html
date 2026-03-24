@@ -4,7 +4,8 @@
       TASKFLOW<span class="text-indigo-500">.</span>
     </div>
     <nav class="flex-1 p-4 space-y-2 mt-4">
-      <div class="flex items-center gap-3 px-4 py-3 bg-indigo-600 rounded-2xl text-sm font-bold shadow-lg shadow-indigo-500/20">
+      <div
+        class="flex items-center gap-3 px-4 py-3 bg-indigo-600 rounded-2xl text-sm font-bold shadow-lg shadow-indigo-500/20">
         Tổng quan
       </div>
     </nav>
@@ -20,65 +21,216 @@
             Rời hệ thống
           </button>
         </div>
-        <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-black">AD</div>
+        <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-black">AD
+        </div>
       </div>
     </header>
 
     <main class="flex-1 overflow-y-auto p-10">
+      <div
+        class="bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-200/40 mb-8 transform transition-all hover:-translate-y-1 hover:shadow-2xl">
+        <div class="flex justify-between items-end mb-4">
+          <div>
+            <h2 class="text-xl font-black text-slate-800">Tiến độ dự án</h2>
+            <p class="text-sm text-slate-400 font-medium mt-1">
+              Bạn đã hoàn thành <span class="font-bold text-slate-600">{{ doneTasks() }}/{{ totalTasks() }}</span> công
+              việc
+            </p>
+          </div>
+          <span class="text-4xl font-black text-indigo-600">{{ completionRate() }}%</span>
+        </div>
+
+        <div class="w-full bg-slate-100 rounded-full h-4 overflow-hidden shadow-inner">
+          <div
+            class="bg-gradient-to-r from-indigo-500 to-purple-500 h-4 rounded-full transition-all duration-1000 ease-out relative"
+            [style.width.%]="completionRate()">
+            <div class="absolute top-0 left-0 bottom-0 right-0 bg-white/20 rounded-full"></div>
+          </div>
+        </div>
+      </div>
       <div class="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
         <div class="p-8 border-b border-slate-50 flex justify-between items-center gap-4">
           <h2 class="text-xl font-black text-slate-800">Danh sách công việc</h2>
-          
+          <button (click)="exportToCSV()"
+            class="px-4 py-2 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-xl hover:bg-emerald-200 transition-all text-nowrap flex items-center gap-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            Xuất Excel
+          </button>
           <div class="flex items-center gap-4">
-            <button (click)="openAddModal()" class="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition-all text-nowrap">
+            <button (click)="openAddModal()"
+              class="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition-all text-nowrap">
               + Thêm Task
             </button>
 
             <div class="relative w-64">
               <span class="absolute inset-y-0 left-4 flex items-center text-slate-400">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
               </span>
               <input type="text" (input)="updateSearch($event)" placeholder="Tìm task hoặc người..."
                 class="w-full pl-11 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs outline-none focus:ring-2 focus:ring-indigo-500/20">
             </div>
           </div>
         </div>
+        <div class="p-8 border-b border-slate-50 flex justify-between items-center gap-4">
+        </div>
 
+        <div class="px-8 py-4 bg-slate-50/50 border-b border-slate-50 flex gap-2 overflow-x-auto">
+          <button (click)="currentFilter.set('All')" [class.bg-slate-800]="currentFilter() === 'All'"
+            [class.text-white]="currentFilter() === 'All'" [class.bg-white]="currentFilter() !== 'All'"
+            class="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-200 transition-all shadow-sm">
+            Tất cả
+          </button>
+
+          <button (click)="currentFilter.set('Todo')" [class.bg-slate-800]="currentFilter() === 'Todo'"
+            [class.text-white]="currentFilter() === 'Todo'" [class.bg-white]="currentFilter() !== 'Todo'"
+            class="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-200 transition-all shadow-sm">
+            Chờ làm
+          </button>
+
+          <button (click)="currentFilter.set('In Progress')" [class.bg-slate-800]="currentFilter() === 'In Progress'"
+            [class.text-white]="currentFilter() === 'In Progress'" [class.bg-white]="currentFilter() !== 'In Progress'"
+            class="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-200 transition-all shadow-sm">
+            Đang xử lý
+          </button>
+
+          <button (click)="currentFilter.set('Done')" [class.bg-slate-800]="currentFilter() === 'Done'"
+            [class.text-white]="currentFilter() === 'Done'" [class.bg-white]="currentFilter() !== 'Done'"
+            class="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-200 transition-all shadow-sm">
+            Đã hoàn thành
+          </button>
+        </div>
         <table class="w-full text-left">
           <thead>
             <tr class="bg-slate-50/50">
-              <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tên công việc</th>
-              <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Người làm</th>
-              <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Trạng thái</th>
-              <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Thao tác</th>
+              <th class="px-6 py-4 w-10">
+                <input type="checkbox" [checked]="isAllSelected()" (change)="toggleAll($event)"
+                  class="w-4 h-4 text-indigo-600 bg-slate-100 border-slate-300 rounded focus:ring-indigo-500 cursor-pointer">
+              </th>
+              <th (click)="toggleSort('title')"
+                class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors select-none group">
+                <div class="flex items-center gap-2">
+                  Tên công việc
+                  @if (sortColumn() === 'title') {
+                  <span class="text-indigo-500">{{ sortDirection() === 'asc' ? '↑' : '↓' }}</span>
+                  } @else {
+                  <span class="opacity-0 group-hover:opacity-50 transition-opacity">↕</span>
+                  }
+                </div>
+
+              </th>
+
+              <th (click)="toggleSort('assignee')"
+                class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors select-none group">
+                <div class="flex items-center gap-2">
+                  Người làm
+                  @if (sortColumn() === 'assignee') {
+                  <span class="text-indigo-500">{{ sortDirection() === 'asc' ? '↑' : '↓' }}</span>
+                  } @else {
+                  <span class="opacity-0 group-hover:opacity-50 transition-opacity">↕</span>
+                  }
+                </div>
+              </th>
+
+              <th (click)="toggleSort('priority')"
+                class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors select-none group">
+                <div class="flex items-center gap-2">
+                  Ưu tiên
+                  @if (sortColumn() === 'priority') {
+                  <span class="text-indigo-500">{{ sortDirection() === 'asc' ? '↑' : '↓' }}</span>
+                  } @else {
+                  <span class="opacity-0 group-hover:opacity-50 transition-opacity">↕</span>
+                  }
+                </div>
+              </th>
+
+              <th (click)="toggleSort('status')"
+                class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-pointer hover:bg-slate-100 transition-colors select-none group">
+                <div class="flex items-center gap-2">
+                  Trạng thái
+                  @if (sortColumn() === 'status') {
+                  <span class="text-indigo-500">{{ sortDirection() === 'asc' ? '↑' : '↓' }}</span>
+                  } @else {
+                  <span class="opacity-0 group-hover:opacity-50 transition-opacity">↕</span>
+                  }
+                </div>
+              </th>
+
+              <th class="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Thao tác
+              </th>
             </tr>
           </thead>
           <tbody>
-            @for (item of filteredTasks(); track item.id) {
-            <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-all group">
+            @for (item of paginatedTasks(); track item.id) { 
+              <tr class="border-b border-slate-50 transition-all group"
+              [class.bg-indigo-50]="selectedTaskIds().includes(item.id)"
+              [class.hover:bg-slate-50]="!selectedTaskIds().includes(item.id)">
+
+              <td class="px-6 py-5 w-10">
+                <input type="checkbox" [checked]="selectedTaskIds().includes(item.id)"
+                  (change)="toggleSelection(item.id)"
+                  class="w-4 h-4 text-indigo-600 bg-slate-100 border-slate-300 rounded focus:ring-indigo-500 cursor-pointer">
+              </td>
+
               <td class="px-8 py-5 text-sm font-bold text-slate-700">{{ item.title }}</td>
+
               <td class="px-8 py-5">
                 <span class="text-sm font-medium text-slate-500">{{ item.assignee }}</span>
               </td>
+
               <td class="px-8 py-5">
-                <span [class]="'px-3 py-1 rounded-full text-[10px] font-black uppercase ' + getStatusClass(item.status)">
+                <div class="flex items-center gap-1.5">
+                  @if (item.priority === 'High') {
+                  <span class="relative flex h-2 w-2">
+                    <span
+                      class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                  </span>
+                  }
+                  <span
+                    [class]="'px-2 py-1 rounded-md text-[10px] font-bold border uppercase ' + getPriorityClass(item.priority)">
+                    {{ item.priority }}
+                  </span>
+                </div>
+              </td>
+
+              <td class="px-8 py-5">
+                <span
+                  [class]="'px-3 py-1 rounded-full text-[10px] font-black uppercase ' + getStatusClass(item.status)">
                   {{ item.status }}
                 </span>
               </td>
+
               <td class="px-8 py-5 text-right">
                 <div class="flex justify-end gap-2">
-                  <button (click)="openEditModal(item)" class="p-2 text-slate-300 hover:text-indigo-500 hover:bg-indigo-50 rounded-lg transition-all md:opacity-0 md:group-hover:opacity-100">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                  <button (click)="openEditModal(item)"
+                    class="p-2 text-slate-300 hover:text-indigo-500 hover:bg-indigo-50 rounded-lg transition-all md:opacity-0 md:group-hover:opacity-100">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                      </path>
+                    </svg>
                   </button>
-                  <button (click)="deleteTask(item.id)" class="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all md:opacity-0 md:group-hover:opacity-100">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                  <button (click)="deleteTask(item.id)"
+                    class="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all md:opacity-0 md:group-hover:opacity-100">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                      </path>
+                    </svg>
                   </button>
                 </div>
               </td>
+
             </tr>
             } @empty {
             <tr>
-              <td colspan="4" class="px-8 py-20 text-center text-slate-400 italic">Không tìm thấy kết quả nào...</td>
+              <td colspan="6" class="px-8 py-20 text-center text-slate-400 italic">Không tìm thấy kết quả nào...</td>
             </tr>
             }
           </tbody>
@@ -90,17 +242,24 @@
   @if (showModal()) {
   <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" (click)="showModal.set(false)"></div>
-    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md relative z-10 overflow-hidden animate-in fade-in zoom-in duration-200">
+    <div
+      class="bg-white rounded-3xl shadow-2xl w-full max-w-md relative z-10 overflow-hidden animate-in fade-in zoom-in duration-200">
       <div class="p-8 border-b border-slate-50">
-        <h3 class="text-xl font-black text-slate-800">{{ isEditMode() ? 'Cập nhật công việc' : 'Tạo công việc mới' }}</h3>
+        <h3 class="text-xl font-black text-slate-800">{{ isEditMode() ? 'Cập nhật công việc' : 'Tạo công việc mới' }}
+        </h3>
         <p class="text-sm text-slate-400 font-medium">Nhập chi tiết công việc bên dưới</p>
       </div>
 
       <form [formGroup]="taskForm" (ngSubmit)="saveTask()" class="p-8 space-y-4">
         <div>
-          <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Tên công việc</label>
-          <input formControlName="title" type="text" placeholder="Ví dụ: Fix bug giao diện..."
-            class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all">
+          <div>
+            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Tên công việc</label>
+            <input formControlName="title" type="text" [class.border-red-500]="isFieldInvalid('title')"
+              class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm focus:bg-white focus:ring-4 focus:ring-indigo-50 outline-none transition-all">
+            @if (isFieldInvalid('title')) {
+            <p class="text-[10px] text-red-500 mt-1 font-bold italic">* Vui lòng nhập tên công việc</p>
+            }
+          </div>
         </div>
 
         <div>
@@ -112,7 +271,8 @@
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Ưu tiên</label>
-            <select formControlName="priority" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none">
+            <select formControlName="priority"
+              class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none">
               <option value="Low">Thấp</option>
               <option value="Medium">Vừa</option>
               <option value="High">Cao</option>
@@ -120,7 +280,8 @@
           </div>
           <div>
             <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Trạng thái</label>
-            <select formControlName="status" class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none">
+            <select formControlName="status"
+              class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none">
               <option value="Todo">Chờ làm</option>
               <option value="In Progress">Đang làm</option>
               <option value="Done">Xong</option>
@@ -129,12 +290,61 @@
         </div>
 
         <div class="flex gap-3 pt-4">
-          <button type="button" (click)="showModal.set(false)" class="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-xl transition-all">Hủy</button>
-          <button type="submit" class="flex-1 py-3 bg-indigo-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 transition-all">
+          <button type="button" (click)="showModal.set(false)"
+            class="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-xl transition-all">Hủy</button>
+          <button type="submit"
+            class="flex-1 py-3 bg-indigo-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 transition-all">
             {{ isEditMode() ? 'Cập nhật' : 'Lưu Task' }}
           </button>
         </div>
       </form>
+    </div>
+  </div>
+  }
+  @if (selectedTaskIds().length > 0) {
+  <div class="fixed bottom-10 left-1/2 -translate-x-1/2 z-40 animate-in slide-in-from-bottom-8 fade-in duration-300">
+    <div
+      class="bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-6 border border-slate-700">
+      <div class="flex items-center gap-2">
+        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-500 text-xs font-bold">
+          {{ selectedTaskIds().length }}
+        </span>
+        <span class="text-sm font-medium">task được chọn</span>
+      </div>
+
+      <div class="h-5 w-px bg-slate-700"></div>
+      <div class="flex items-center gap-2">
+        <button (click)="bulkMarkAsDone()"
+          class="px-4 py-2 text-xs font-bold bg-white text-slate-900 rounded-full hover:bg-slate-200 transition-colors shadow-sm">
+          Đánh dấu Đã xong
+        </button>
+        <button (click)="bulkDelete()"
+          class="px-4 py-2 text-xs font-bold text-red-400 hover:text-red-300 hover:bg-slate-800 rounded-full transition-colors">
+          Xóa
+        </button>
+      </div>
+    </div>
+  </div>
+  }
+  @if (toastMessage()) {
+  <div class="fixed bottom-10 right-10 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300">
+    <div class="px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 text-sm font-bold text-white transition-colors"
+      [class.bg-emerald-500]="toastType() === 'success'" [class.bg-blue-500]="toastType() === 'info'"
+      [class.bg-red-500]="toastType() === 'error'">
+
+      @if (toastType() === 'success') {
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      } @else if (toastType() === 'info') {
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      }
+
+      <span>{{ toastMessage() }}</span>
     </div>
   </div>
   }
