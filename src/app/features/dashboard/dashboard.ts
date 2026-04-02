@@ -33,7 +33,7 @@ export class Dashboard implements AfterViewInit {
   isSidebarOpen = signal(false);
   viewMode = signal<'table' | 'kanban'>('kanban');
 
-  tasks = signal<Task[]>([]); 
+  tasks = signal<Task[]>([]);
   searchQuery = signal('');
   currentFilter = signal<'All' | 'Todo' | 'In Progress' | 'Done'>('All');
   sortColumn = signal<keyof Task>('createdAt');
@@ -96,7 +96,7 @@ export class Dashboard implements AfterViewInit {
   }
 
   ngAfterViewInit() { this.renderChart(); }
-  
+
   filteredTasks = computed(() => {
     let result = this.tasks();
     if (this.currentFilter() !== 'All') result = result.filter(t => t.status === this.currentFilter());
