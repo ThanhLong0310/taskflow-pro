@@ -4,9 +4,10 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { Chart, registerables } from 'chart.js';
 import confetti from 'canvas-confetti';
-
-// Đã gỡ collectionData, xài đồ zin onSnapshot của Google!
+import { Auth, signInWithPopup, GoogleAuthProvider, signOut, user } from '@angular/fire/auth';
 import { Firestore, collection, doc, setDoc, deleteDoc, updateDoc, onSnapshot } from '@angular/fire/firestore';
+import { AsyncPipe } from '@angular/common';
+
 Chart.register(...registerables);
 
 interface Task {
@@ -20,12 +21,13 @@ interface Task {
   tags: string[];
   subTasksTotal: number;
   subTasksDone: number;
+  userId?: string; // Đã thêm biến này để lưu dấu chân sếp Tâm
 }
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DragDropModule],
+  imports: [CommonModule, ReactiveFormsModule, DragDropModule, AsyncPipe], // Đã dọn dẹp dấu phẩy thừa
   templateUrl: './dashboard.html',
 })
 export class Dashboard implements AfterViewInit {
@@ -55,7 +57,8 @@ export class Dashboard implements AfterViewInit {
   chartInstance: any;
 
   successSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
-
+  private auth: Auth = inject(Auth);
+  user$ = user(this.auth);
   private firestore: Firestore = inject(Firestore);
   private tasksCollection = collection(this.firestore, 'tasks');
 
@@ -73,12 +76,17 @@ export class Dashboard implements AfterViewInit {
 
     if (this.isDarkMode()) document.documentElement.classList.add('dark');
 
-    // MÁY CẢM BIẾN REAL-TIME TỐI THƯỢNG (Dùng hàm Zin của Google)
+    // MÁY CẢM BIẾN REAL-TIME: ĐÃ NÂNG CẤP BỘ LỌC TÀI KHOẢN
     onSnapshot(this.tasksCollection, (snapshot) => {
-      const tasksData = snapshot.docs.map(doc => doc.data() as Task);
-      console.log("🎉 FIREBASE ĐÃ CHỊU NHẢ DỮ LIỆU:", tasksData);
+      const currentUid = this.auth.currentUser?.uid; // Hỏi xem ai đang đăng nhập
+      
+      const tasksData = snapshot.docs
+        .map(doc => doc.data() as Task)
+        .filter(task => task.userId === currentUid); // CHỈ LỌC TASK CỦA NGƯỜI ĐÓ
+
+      console.log("🎉 FIREBASE ĐÃ CHỊU NHẢ DỮ LIỆU RIÊNG TƯ:", tasksData);
       this.tasks.set(tasksData);
-      this.cdr.detectChanges(); // Ép vẽ lại giao diện
+      this.cdr.detectChanges(); 
     }, (error) => {
       console.error("❌ Lỗi cản đường:", error);
     });
@@ -156,8 +164,15 @@ export class Dashboard implements AfterViewInit {
       this.taskForm.markAllAsTouched();
       return;
     }
-    const rawVal = this.taskForm.value;
 
+    // NÂNG CẤP: Lấy ID người dùng trước khi lưu
+    const currentUid = this.auth.currentUser?.uid;
+    if (!currentUid) {
+      this.showToast('Vui lòng đăng nhập để lưu task!', 'error');
+      return;
+    }
+
+    const rawVal = this.taskForm.value;
     const processedTags = rawVal.tags ? String(rawVal.tags).split(',').map(t => t.trim()).filter(t => t !== '') : [];
     const val = { ...rawVal, tags: processedTags };
 
@@ -169,7 +184,15 @@ export class Dashboard implements AfterViewInit {
       } else {
         const newId = Date.now().toString();
         const docRef = doc(this.firestore, 'tasks', newId);
-        const newTask: Task = { ...val, id: newId, createdAt: Date.now() };
+        
+        // Gắn thẻ ID chủ sở hữu vào task mới
+        const newTask: Task = { 
+          ...val, 
+          id: newId, 
+          createdAt: Date.now(),
+          userId: currentUid 
+        };
+        
         await setDoc(docRef, newTask);
         this.showToast('Tạo task thành công!', 'success');
       }
@@ -283,4 +306,21 @@ export class Dashboard implements AfterViewInit {
   }
 
   onLogout() { if (confirm('Bạn có chắc muốn đăng xuất?')) this.showToast('Đã đăng xuất thành công!', 'info'); }
+  
+  async login() {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(this.auth, provider);
+      this.showToast('Chào mừng sếp đã quay trở lại!', 'success');
+    } catch (error) {
+      this.showToast('Đăng nhập thất bại rồi sếp ơi!', 'error');
+    }
+  }
+
+  async logout() {
+    if (confirm('Sếp chắc chắn muốn đăng xuất chứ?')) {
+      await signOut(this.auth);
+      this.showToast('Đã đăng xuất an toàn!', 'info');
+    }
+  }
 }
